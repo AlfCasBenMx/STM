@@ -1,0 +1,23 @@
+import pandas as pd
+import re
+
+# Cargar el documento STM
+data = pd.read_csv('tu_archivo.csv')  # Asegúrate de ajustar la ruta y el nombre del archivo
+
+# Función para buscar nombres de variables y tablas en una consulta SQL
+def extraer_info(query):
+    # Buscar el nombre de la variable (asumiendo que se selecciona con "AS" en SQL)
+    var_name_match = re.search(r"AS (\w+)", query, re.IGNORECASE)
+    var_name = var_name_match.group(1) if var_name_match else "No encontrado"
+    
+    # Buscar el nombre de la tabla (asumiendo un formato simple FROM Tabla)
+    table_name_match = re.search(r"FROM (\w+)", query, re.IGNORECASE)
+    table_origin = table_name_match.group(1) if table_name_match else "No encontrado"
+    
+    return var_name, table_origin
+
+# Aplicar la función a las columnas específicas que contienen las queries
+data[['Variable', 'Tabla_Origen']] = data['Columna_Query'].apply(lambda x: pd.Series(extraer_info(x)))
+
+# Guardar los resultados
+data.to_csv('resultado_extraccion.csv', index=False)
